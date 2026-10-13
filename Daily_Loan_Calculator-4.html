@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Loan Calculator</title>
+<style>
+:root{--green:#12852b;--bg:#f3f6f4;--ink:#17221a;--muted:#66736a;--line:#dfe7e1;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:var(--green);color:white;padding:22px 18px 24px;border-radius:0 0 22px 22px}
+header .sub{opacity:.9;font-size:13px;margin-top:6px}
+main{max-width:760px;margin:18px auto;padding:0 14px 30px}
+.card{background:var(--card);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 3px 14px #17331d0d}
+h1{font-size:23px;margin:0}h2{font-size:17px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.field{display:flex;flex-direction:column;gap:7px}
+label{font-size:13px;color:#435248;font-weight:700}
+input,select{width:100%;border:1px solid #cbd7ce;border-radius:10px;padding:12px;font-size:16px;background:white;color:var(--ink);outline-color:var(--green)}
+input:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 2px #12852b20}
+small,.hint{font-size:12px;color:var(--muted);line-height:1.45}
+.rategrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.rate{background:#eff7f0;border:1px solid #d7e9da;border-radius:12px;padding:12px 9px}
+.rate span{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}
+.rate strong{font-size:19px;overflow-wrap:anywhere}
+.results{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.result{border:1px solid var(--line);border-radius:12px;padding:13px}
+.result .k{font-size:12px;color:var(--muted);margin-bottom:7px}
+.result .v{font-size:20px;font-weight:700;overflow-wrap:anywhere}
+.result.primary{background:#edf8ef;border-color:#cde8d2}
+.result.primary .v{font-size:25px;color:#087b27}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:11px;padding:12px 15px;font-weight:700;font-size:14px;cursor:pointer}
+.btn{background:var(--green);color:white}.secondary{background:#e9efea;color:#203126}
+.note{font-size:12px;line-height:1.5;color:var(--muted)}
+.warning{color:#a34315;background:#fff5e9;padding:10px;border-radius:10px;font-size:12px;line-height:1.45}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.rate strong{font-size:16px}.result .v{font-size:18px}.result.primary .v{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Daily Loan Calculator</h1>
+  <div class="sub">Loan amount • Daily installment • Interest rates • Processing fee</div>
+</header>
+<main>
+  <section class="card">
+    <h2>Loan Details</h2>
+    <div class="grid">
+      <div class="field"><label for="principal">Loan Amount / Principal (₹)</label><input id="principal" type="number" inputmode="decimal" min="0" step="0.01" value="48000"></div>
+      <div class="field"><label for="tenure">Tenure</label><input id="tenure" type="number" inputmode="decimal" min="0" step="1" value="12"></div>
+      <div class="field"><label for="unit">Tenure Unit</label><select id="unit"><option value="months" selected>Months</option><option value="days">Days</option></select></div>
+      <div class="field" id="daysField"><label for="daysMonth">Days per Month</label><select id="daysMonth"><option value="30" selected>30 days</option><option value="26">26 working days</option></select></div>
+      <div class="field"><label for="dailyEmi">Daily Installment (₹)</label><input id="dailyEmi" type="number" inputmode="decimal" min="0" step="0.01" value="155"></div>
+      <div class="field"><label for="monthlyRate">Monthly Interest Rate (%)</label><input id="monthlyRate" type="number" inputmode="decimal" min="0" step="any" value="1.32" placeholder="e.g. 1.32"><small>Decimal supported: 1.32, 1.25, 0.85</small></div>
+      <div class="field"><label for="feeMode">Processing Fee Type</label><select id="feeMode"><option value="fixed" selected>Fixed Amount (₹)</option><option value="percent">Percentage (%)</option></select></div>
+      <div class="field"><label for="fee">Processing Fee Value</label><input id="fee" type="number" inputmode="decimal" min="0" step="any" value="2693"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Interest Rate Details</h2>
+    <div class="rategrid">
+      <div class="rate"><span>Monthly Interest</span><strong id="monthlyOut">1.32%</strong></div>
+      <div class="rate"><span>Yearly Interest</span><strong id="yearlyOut">15.84%</strong></div>
+      <div class="rate"><span>Daily Interest</span><strong id="dailyOut">0.0440%</strong></div>
+    </div>
+    <p class="hint">Yearly rate = monthly rate × 12. Daily rate = monthly rate ÷ selected days per month. These are nominal rate conversions.</p>
+  </section>
+
+  <section class="card">
+    <h2>Calculation Result</h2>
+    <div class="results">
+      <div class="result primary" style="grid-column:1/-1"><div class="k">Customer Net Payout (after processing fee)</div><div class="v" id="netOut">₹45,307</div></div>
+      <div class="result"><div class="k">Total Collection Days</div><div class="v" id="daysOut">360</div></div>
+      <div class="result"><div class="k">Daily Installment</div><div class="v" id="emiOut">₹155</div></div>
+      <div class="result"><div class="k">Total Repayment</div><div class="v" id="repayOut">₹55,800</div></div>
+      <div class="result"><div class="k">Processing Fee</div><div class="v" id="feeOut">₹2,693</div></div>
+      <div class="result"><div class="k">Interest / Repayment Difference</div><div class="v" id="interestOut">₹7,800</div></div>
+      <div class="result"><div class="k">Estimated Yearly Interest on Principal</div><div class="v" id="yearlyInterestAmountOut">₹7,603.20</div></div>
+      <div class="result"><div class="k">Interest + Processing Fee</div><div class="v" id="costOut">₹10,493</div></div>
+      <div class="result primary" style="grid-column:1/-1"><div class="k">Final Total Amount (Loan Amount + Interest)</div><div class="v" id="totalAmountOut">₹55,800</div></div>
+    </div>
+    <div id="warning" class="warning" style="display:none;margin-top:12px"></div>
+    <div class="actions">
+      <button class="btn" id="copyBtn" type="button">Copy Report</button>
+      <button class="secondary" id="resetBtn" type="button">Reset Example</button>
+    </div>
+  </section>
+  <section class="card">
+    <div class="note"><strong>Important:</strong> Total repayment = daily installment × collection days. “Interest / Repayment Difference” = total repayment − principal; this is not necessarily the lender’s official accounting interest. “Estimated Yearly Interest on Principal” is a simple estimate using the entered yearly rate and original principal; it may differ from the daily-installment repayment difference. Actual loan charges may depend on reducing balance, actual collection days, GST, and lender rules.</div>
+  </section>
+</main>
+<script>
+const ids = ['principal','tenure','unit','daysMonth','dailyEmi','monthlyRate','feeMode','fee'];
+const $ = id => document.getElementById(id);
+const val = id => { const n = Number($(id).value); return Number.isFinite(n) ? Math.max(0,n) : 0; };
+const money = n => '₹' + (Number.isFinite(n)?n:0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const pct = (n,d=2) => (Number.isFinite(n)?n:0).toFixed(d)+'%';
+function calculate(){
+  const principal=val('principal'), tenure=val('tenure'), daysMonth=val('daysMonth')||30;
+  const days=$('unit').value==='months'?tenure*daysMonth:tenure;
+  const emi=val('dailyEmi'), monthlyRate=val('monthlyRate');
+  const fee= $('feeMode').value==='percent' ? principal*val('fee')/100 : val('fee');
+  const repayment=emi*days, difference=repayment-principal, net=principal-fee;
+  $('daysField').style.display=$('unit').value==='months'?'flex':'none';
+  $('monthlyOut').textContent=pct(monthlyRate,2);
+  $('yearlyOut').textContent=pct(monthlyRate*12,2);
+  $('dailyOut').textContent=pct(monthlyRate/daysMonth,4);
+  $('netOut').textContent=money(net);
+  $('daysOut').textContent=days.toLocaleString('en-IN',{maximumFractionDigits:2});
+  $('emiOut').textContent=money(emi);
+  $('repayOut').textContent=money(repayment);
+  $('feeOut').textContent=money(fee);
+  $('interestOut').textContent=money(difference);
+  $('costOut').textContent=money(difference+fee);
+  // Estimate for one year using the entered nominal yearly rate and original principal.
+  $('yearlyInterestAmountOut').textContent=money(principal*(monthlyRate*12)/100);
+  // Total amount repaid = principal plus the repayment/principal difference.
+  $('totalAmountOut').textContent=money(principal+difference);
+  const warning=$('warning');
+  if(net<0){warning.style.display='block';warning.textContent='Warning: Processing fee loan amount se zyada hai.';}
+  else if(difference<0){warning.style.display='block';warning.textContent='Warning: Total repayment principal se kam hai. Values check karein.';}
+  else {warning.style.display='none';warning.textContent='';}
+}
+ids.forEach(id=>$(id).addEventListener('input',calculate));
+$('unit').addEventListener('change',calculate);
+$('daysMonth').addEventListener('change',calculate);
+$('feeMode').addEventListener('change',calculate);
+$('resetBtn').addEventListener('click',()=>{
+  $('principal').value='48000';$('tenure').value='12';$('unit').value='months';$('daysMonth').value='30';
+  $('dailyEmi').value='155';$('monthlyRate').value='1.32';$('feeMode').value='fixed';$('fee').value='2693';calculate();
+});
+$('copyBtn').addEventListener('click',async()=>{
+ const text=`DAILY LOAN CALCULATOR
+Loan Amount: ${$('principal').value}
+Tenure: ${$('tenure').value} ${$('unit').value}
+Collection Days: ${$('daysOut').textContent}
+Daily Installment: ${$('emiOut').textContent}
+Monthly Interest Rate: ${$('monthlyOut').textContent}
+Yearly Interest Rate: ${$('yearlyOut').textContent}
+Daily Interest Rate: ${$('dailyOut').textContent}
+Processing Fee: ${$('feeOut').textContent}
+Customer Net Payout: ${$('netOut').textContent}
+Total Repayment: ${$('repayOut').textContent}
+Interest / Repayment Difference: ${$('interestOut').textContent}
+Estimated Yearly Interest on Principal: ${$('yearlyInterestAmountOut').textContent}
+Interest + Processing Fee: ${$('costOut').textContent}
+Final Total Amount (Loan Amount + Interest): ${$('totalAmountOut').textContent}`;
+ try{await navigator.clipboard.writeText(text);$('copyBtn').textContent='Copied!';setTimeout(()=>$('copyBtn').textContent='Copy Report',1600);}
+ catch(e){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();$('copyBtn').textContent='Copied!';setTimeout(()=>$('copyBtn').textContent='Copy Report',1600);}
+});
+calculate();
+</script>
+</body>
+</html>
